@@ -54,6 +54,7 @@ button{font:inherit;cursor:pointer}
 .g.done .ck{background:var(--grn)}
 label{font-size:13px;color:var(--mute)}
 .sec.on{background:var(--grn);color:#fff}
+.gt{cursor:pointer}
 a.sec{display:block;text-align:center;text-decoration:none}
 .sm{width:auto!important;margin:0!important;padding:7px 12px!important;font-size:14px}
 </style></head>
@@ -84,7 +85,7 @@ const num=s=>parseFloat(String(s||"").replace(/[^0-9.]/g,""))||0
 const money=s=>/^[\d.,]+$/.test(String(s).trim())?"£"+String(s).trim():s;
 function vis(g){const p=S.people[g.pid];if(!p)return false;const y=g.occ==="christmas"?xmas().getFullYear():(nextOcc(p)||today()).getFullYear();return !g.bought||g.yr>=y}
 function gifts(pid,occ){return S.gifts.filter(g=>g.pid===pid&&(!occ||g.occ===occ)&&vis(g))}
-function giftRow(g,who){return `<div class="g ${g.bought?"done":""}"><button class="ck" data-a="bought" data-id="${g.id}" aria-label="Toggle bought">${g.bought?"✓":""}</button><div class="gt"><div>${esc(g.text)}</div><small>${who?esc(S.people[g.pid].name)+" · ":""}${g.occ==="christmas"?"🎄 Christmas":"🎂 Birthday"}${g.price?" · "+esc(money(g.price)):""}${g.bought?" · bought":""}</small></div><button class="x" data-a="del" data-id="${g.id}" aria-label="Delete">✕</button></div>`}
+function giftRow(g,who){return `<div class="g ${g.bought?"done":""}"><button class="ck" data-a="bought" data-id="${g.id}" aria-label="Toggle bought">${g.bought?"✓":""}</button><div class="gt" data-a="eg" data-id="${g.id}"><div>${esc(g.text)}</div><small>${who?esc(S.people[g.pid].name)+" · ":""}${g.occ==="christmas"?"🎄 Christmas":"🎂 Birthday"}${g.price?" · "+esc(money(g.price)):""}${g.bought?" · bought":""}</small></div><button class="x" data-a="del" data-id="${g.id}" aria-label="Delete">✕</button></div>`}
 
 function upHTML(){
   const rows=Object.entries(S.people).filter(([,p])=>p.m).map(([id,p])=>{const o=nextOcc(p);return{id,p,o,n:diff(o)}}).sort((a,b)=>a.n-b.n||a.p.name.localeCompare(b.p.name));
@@ -94,20 +95,12 @@ function upHTML(){
   const xn=diff(xmas());
   let h=tip()+`<div class="card"><div class="mute">Christmas in</div><div class="big">${xn} days</div><small>${soon.length?soon.length+" birthday"+(soon.length>1?"s":"")+" in the next 30 days without a gift bought":"No gifts outstanding in the next 30 days"}</small></div>`;
   h+=shown.map(r=>{const gs=gifts(r.id,"birthday"),b=gs.filter(g=>g.bought).length,i=gs.length-b;
-    const st=isB(r.p)?'<span class="ok">✓ Gifts sorted</span>':b?`<span class="ok">✓ ${b} bought</span>`+(i?` · ${i} idea${i>1?"s":""}`:""):i?`${i} idea${i>1?"s":""}`:`<span class="${r.n<=21?"warn":""}">No ideas yet</span>`;
+    const st=r.p.hide?"\ud83d\udd12 Gifts hidden":isB(r.p)?'<span class="ok">✓ Gifts sorted</span>':b?`<span class="ok">✓ ${b} bought</span>`+(i?` · ${i} idea${i>1?"s":""}`:""):i?`${i} idea${i>1?"s":""}`:`<span class="${r.n<=21?"warn":""}">No ideas yet</span>`;
     const age=r.p.by?` <small>turns ${r.o.getFullYear()-r.p.by}</small>`:"";
     return `<button class="row" data-a="${edit?"rm":"person"}" data-id="${r.id}"><div class="dt"><b>${r.o.getDate()}</b><span>${r.o.toLocaleDateString(undefined,{month:"short"})}</span></div><div class="mid"><div class="nm">${esc(r.p.name)}${age}</div><div class="sub">${rel(r.n)} · ${st}</div></div>${edit?'<span class="warn">Remove</span>':""}</button>`}).join("")||`<p class="mute">Nothing in the next 90 days.</p>`;
   h+=`<button class="sec" data-a="edit">${edit?"Done removing":"Remove people from list"}</button><button class="sec" data-a="more">${all?"Show next 90 days only":"Show all birthdays ("+rows.length+")"}</button>`;
   return h}
 
-function xHTML(){
-  const gs=S.gifts.filter(g=>g.occ==="christmas"&&vis(g));
-  const plan=gs.reduce((a,g)=>a+num(g.price),0),spent=gs.filter(g=>g.bought).reduce((a,g)=>a+num(g.price),0);
-  let h=`<div class="card"><div class="mute">${diff(xmas())} days to Christmas</div><div class="big">${gs.filter(g=>g.bought).length}/${gs.length} bought</div><small>Spent £${spent.toFixed(2)} of £${plan.toFixed(2)} planned</small></div><button class="pri" data-a="pick">+ Add Christmas idea</button>`;
-  const by={};gs.forEach(g=>(by[g.pid]=by[g.pid]||[]).push(g));
-  Object.keys(by).sort((a,b)=>S.people[a].name.localeCompare(S.people[b].name)).forEach(pid=>{h+=`<h3>${esc(S.people[pid].name)}</h3><div class="card" style="padding:2px 14px">${by[pid].map(g=>giftRow(g)).join("")}</div>`});
-  if(!gs.length)h+=`<p class="mute">No Christmas ideas yet. Add one for each person on your list.</p>`;
-  return h}
 
 function plist(){const t=q.trim().toLowerCase();return Object.entries(S.people).filter(([,p])=>p.name.toLowerCase().includes(t)).sort((a,b)=>a[1].name.localeCompare(b[1].name)).map(([id,p])=>`<button class="row" data-a="${edit?"rm":"person"}" data-id="${id}"><div class="mid"><div class="nm">${esc(p.name)}</div><div class="sub">${p.m?"Birthday "+p.d+" "+new Date(2000,p.m-1,1).toLocaleDateString(undefined,{month:"long"}):"No birthday saved"}</div></div>${edit?'<span class="warn">Remove</span>':""}</button>`).join("")||`<p class="mute">No matches.</p>`}
 function pHTML(){return `<input id="srch" type="search" placeholder="Search people" value="${esc(q)}"><button class="pri" data-a="addp">+ Add person</button><button class="sec" data-a="cts" style="margin-bottom:8px">Add from Contacts</button><button class="sec" data-a="edit">${edit?"Done removing":"Remove people from list"}</button><div style="height:10px"></div><div id="plist">${plist()}</div><button class="lnk" data-a="backup">Backup & restore</button>`}
@@ -119,10 +112,11 @@ function close(){$("#sheet").hidden=true;cur=null;render()}
 function personSheet(){
   const p=S.people[cur.id],o=nextOcc(p),age=p.by&&o?` · turns ${o.getFullYear()-p.by}`:"";
   const gs=gifts(cur.id);
+  if(p.hide){sheet(`<div class="hd"><div><h2>${esc(p.name)}</h2><div class="mute">${o?fmt(o)+age+" \u00b7 "+rel(diff(o)).toLowerCase():"No birthday saved"}</div></div><button class="x" data-a="close">\u2715</button></div><div class="card"><b>\ud83d\udd12 Gifts hidden</b><div class="sub" style="margin:6px 0 10px">Ideas, prices and notes for ${esc(p.name)} are hidden.</div><button class="sec" data-a="hide" data-id="${cur.id}" style="margin:0">Show gifts</button></div>`);return}
   sheet(`<div class="hd"><div><h2>${esc(p.name)}</h2><div class="mute">${o?fmt(o)+age+" · "+rel(diff(o)).toLowerCase():"No birthday saved"}</div></div><button class="x" data-a="close">✕</button></div>
-  <button class="sec ${p.xmas?"on":""}" data-a="tx" data-id="${cur.id}" style="margin:0 0 8px">${p.xmas?"✓ On my Christmas list":"+ Add to Christmas list"}</button><div class="r2"><button class="sec ${isX(p)?"on":""}" data-a="xdone" data-id="${cur.id}" style="margin:0 0 12px">${isX(p)?"✓ Christmas sorted":"Christmas sorted?"}</button><button ${p.m?"":"hidden"} class="sec ${isB(p)?"on":""}" data-a="bdone" data-id="${cur.id}" style="margin:0 0 12px">${isB(p)?"✓ Birthday sorted":"Birthday sorted?"}</button></div><input id="gt" placeholder="Gift idea…" enterkeyhint="done"><div class="r2"><input id="gp" inputmode="decimal" placeholder="Price in £ (optional)"><select id="go"><option value="birthday">🎂 Birthday</option><option value="christmas">🎄 Christmas</option></select></div>
+  <button class="sec" data-a="hide" data-id="${cur.id}" style="margin:0 0 8px">\ud83d\udd12 Hide this person\u2019s gifts</button><button class="sec ${p.xmas?"on":""}" data-a="tx" data-id="${cur.id}" style="margin:0 0 8px">${p.xmas?"✓ On my Christmas list":"+ Add to Christmas list"}</button><div class="r2"><button class="sec ${isX(p)?"on":""}" data-a="xdone" data-id="${cur.id}" style="margin:0 0 12px">${isX(p)?"✓ Christmas sorted":"Christmas sorted?"}</button><button ${p.m?"":"hidden"} class="sec ${isB(p)?"on":""}" data-a="bdone" data-id="${cur.id}" style="margin:0 0 12px">${isB(p)?"✓ Birthday sorted":"Birthday sorted?"}</button></div><input id="gt" placeholder="Gift idea…" enterkeyhint="done"><div class="r2"><input id="gp" inputmode="decimal" placeholder="Price in £ (optional)"><select id="go"><option value="birthday">🎂 Birthday</option><option value="christmas">🎄 Christmas</option></select></div>
   <button class="pri" data-a="addgift">Add idea</button>
-  <div style="margin-top:8px">${gs.map(g=>giftRow(g)).join("")||'<p class="mute">No ideas yet.</p>'}</div>
+  <div style="margin-top:8px">${tot(gs)}${gs.map(g=>giftRow(g)).join("")||'<p class="mute">No ideas yet.</p>'}</div>
   <label for="en">Name</label><input id="en" value="${esc(p.name)}"><label for="bd">Birthday</label><input id="bd" type="date" value="${p.m?(p.by||2000)+"-"+String(p.m).padStart(2,"0")+"-"+String(p.d).padStart(2,"0"):""}"><button class="sec" data-a="setbd" data-id="${cur.id}" style="margin:0 0 12px">Save name & birthday</button>${calLinks(cur.id)}<label for="nt">Notes (sizes, likes, dislikes)</label><textarea id="nt">${esc(p.note||"")}</textarea>
   <button class="lnk" data-a="rm" data-id="${cur.id}">Remove person from my lists</button>`);
   $("#go").value=cur.occ||(p.m?"birthday":"christmas");
@@ -135,12 +129,12 @@ const isX=p=>p.xd===xmas().getFullYear();
 const isB=p=>!!p.m&&p.bd===nextOcc(p).getFullYear();
 function xHTML(){
   const ids=Object.keys(S.people).filter(id=>S.people[id].xmas).sort((a,b)=>S.people[a].name.localeCompare(S.people[b].name));
-  const gs=S.gifts.filter(g=>g.occ==="christmas"&&vis(g)&&S.people[g.pid].xmas);
+  const gs=S.gifts.filter(g=>g.occ==="christmas"&&vis(g)&&S.people[g.pid].xmas&&!S.people[g.pid].hide);
   const plan=gs.reduce((a,g)=>a+num(g.price),0),spent=gs.filter(g=>g.bought).reduce((a,g)=>a+num(g.price),0);
   const done=ids.filter(id=>isX(S.people[id])).length;
-  let h=`<div class="card"><div class="mute">${diff(xmas())} days to Christmas</div><div class="big">${done}/${ids.length} people sorted</div><small>${gs.filter(g=>g.bought).length}/${gs.length} gifts bought · Spent £${spent.toFixed(2)} of £${plan.toFixed(2)} planned</small></div><button class="pri" data-a="pick">+ Add person to Christmas list</button><a class="sec" href="${ics("xmas","Christmas Day",xmas(),[28,7])}" download="christmas.ics">Add Christmas to my calendar</a>`;
+  let h=`<div class="card"><div class="mute">${diff(xmas())} days to Christmas</div><div class="big">${done}/${ids.length} people sorted</div><small>${gs.filter(g=>g.bought).length}/${gs.length} gifts bought · Spent £${spent.toFixed(2)} of £${plan.toFixed(2)} planned${ids.some(i=>S.people[i].hide)?" (hidden people not counted)":""}</small></div><button class="pri" data-a="pick">+ Add person to Christmas list</button><a class="sec" href="${ics("xmas","Christmas Day",xmas(),[28,7])}" download="christmas.ics">Add Christmas to my calendar</a>`;
   ids.forEach(id=>{const p=S.people[id],d=isX(p),mine=gs.filter(g=>g.pid===id);
-    h+=`<div class="card" style="margin-top:12px"><div class="hd" style="margin:0;align-items:center"><button class="lnk nm" style="padding:0;color:var(--ink);text-align:left" data-a="person" data-occ="christmas" data-id="${id}">${esc(p.name)}</button><button class="sec sm ${d?"on":""}" data-a="xdone" data-id="${id}">${d?"✓ Sorted":"Mark sorted"}</button></div>${mine.length?mine.map(g=>giftRow(g)).join(""):'<div class="sub" style="margin-top:6px">No ideas yet</div>'}</div>`});
+    h+=`<div class="card" style="margin-top:12px"><div class="hd" style="margin:0;align-items:center"><button class="lnk nm" style="padding:0;color:var(--ink);text-align:left" data-a="person" data-occ="christmas" data-id="${id}">${esc(p.name)}</button><span style="display:flex;gap:6px"><button class="sec sm" data-a="hide" data-id="${id}" aria-label="Hide or show gifts">${p.hide?"\ud83d\udd12":"\ud83d\udc41"}</button><button class="sec sm ${d?"on":""}" data-a="xdone" data-id="${id}">${d?"\u2713 Sorted":"Mark sorted"}</button></span></div>${p.hide?'<div class="sub" style="margin-top:6px">\ud83d\udd12 Gifts hidden</div>':mine.length?tot(mine)+mine.map(g=>giftRow(g)).join(""):'<div class="sub" style="margin-top:6px">No ideas yet</div>'}</div>`});
   if(!ids.length)h+=`<p class="mute">Nobody on your Christmas list yet. Add people now and fill in ideas whenever you’re ready.</p>`;
   return h}
 const ymd=d=>d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0");
@@ -174,6 +168,10 @@ function impSheet(){sheet(`<div class="hd"><h2>Import ${imp.length} contact${imp
 $("#vcf").addEventListener("change",async e=>{let out=[];for(const f of [...e.target.files]){try{out=out.concat(parseVcf(await f.text()))}catch(x){}}e.target.value="";cur={};
   if(!out.length){sheet(`<div class="hd"><h2>Nothing found</h2><button class="x" data-a="close">\u2715</button></div><p class="mute">That file had no contacts in it. In Contacts, open a person, tap Share Contact, and save the .vcf to Files.</p>`);return}
   imp=out;impSheet()});
+function tot(gs){if(!gs.length)return "";const sp=gs.filter(g=>g.bought).reduce((a,g)=>a+num(g.price),0),pl=gs.reduce((a,g)=>a+num(g.price),0);return `<div class="sub" style="margin:6px 0">Spent \u00a3${sp.toFixed(2)} of \u00a3${pl.toFixed(2)} planned \u00b7 tap an idea to edit</div>`}
+let egPrev=null;
+function egBack(){const p=egPrev;egPrev=null;if(p){cur=p;render();personSheet()}else close()}
+function egSheet(id){const g=S.gifts.find(x=>x.id===id);if(!g){close();return}sheet(`<div class="hd"><h2>Edit idea</h2><button class="x" data-a="egback">\u2715</button></div><label for="et">Idea</label><input id="et" value="${esc(g.text)}"><label for="ep">Price in \u00a3 (update it when you know the real cost)</label><input id="ep" inputmode="decimal" value="${esc(g.price||"")}"><label for="eo">For</label><select id="eo"><option value="birthday">\ud83c\udf82 Birthday</option><option value="christmas">\ud83c\udf84 Christmas</option></select><button class="pri" data-a="egsave" data-id="${id}">Save</button><button class="sec" data-a="egback">Cancel</button><button class="lnk" data-a="egdel" data-id="${id}">Delete this idea</button>`);$("#eo").value=g.occ}
 function backupSheet(){sheet(`<div class="hd"><h2>Backup & restore</h2><button class="x" data-a="close">✕</button></div><p class="mute">Copy this text somewhere safe (Notes works well). To move to another copy of the app, paste it into that copy here and tap Restore.</p><textarea id="bkt" style="min-height:140px">${esc(JSON.stringify(S))}</textarea><button class="pri" data-a="restore">Restore from text</button><div id="bkm" class="sub" style="margin-top:8px"></div>`)}
 function confirmSheet(id){const p=S.people[id];sheet(`<div class="hd"><h2>Remove ${esc(p.name)}?</h2><button class="x" data-a="close">✕</button></div><p class="mute">They’ll be taken off all your lists, along with any gift ideas you’ve saved for them.</p><button class="pri" style="background:var(--acc)" data-a="rmgo" data-id="${id}">Remove</button><button class="sec" data-a="close">Cancel</button>`)}
 function refresh(){save();render();if(cur&&cur.id&&!$("#sheet").hidden&&cur.kind==="p")personSheet()}
@@ -190,6 +188,11 @@ document.addEventListener("click",async e=>{
   else if(a==="edit"){edit=!edit;render()}
   else if(a==="cts"){cur={};ctsSheet()}
   else if(a==="pst"){let t="";try{t=await navigator.clipboard.readText()}catch(x){}if(!fromText(t)){const m=$("#pm");if(m)m.textContent="Nothing to add yet. Run your Shortcut first, then tap Paste again."}}
+  else if(a==="hide"){const p=S.people[id];p.hide=!p.hide;refresh()}
+  else if(a==="eg"){egPrev=(cur&&cur.kind==="p")?cur:null;cur={kind:"e"};egSheet(id)}
+  else if(a==="egback")egBack();
+  else if(a==="egsave"){const g=S.gifts.find(x=>x.id===id),t=$("#et").value.trim();if(g&&t){g.text=t;g.price=$("#ep").value.trim();const o=$("#eo").value;if(o!==g.occ){g.occ=o;g.yr=o==="christmas"?xmas().getFullYear():(nextOcc(S.people[g.pid])||today()).getFullYear();if(o==="christmas")S.people[g.pid].xmas=true}}save();egBack()}
+  else if(a==="egdel"){S.gifts=S.gifts.filter(x=>x.id!==id);save();egBack()}
   else if(a==="vcf")$("#vcf").click();
   else if(a==="impgo"){const x=$("#ix").checked;let ad=0,up=0;document.querySelectorAll(".ic").forEach(b=>{if(!b.checked)return;const c=imp[+b.dataset.i];let k=Object.keys(S.people).find(k=>S.people[k].name.toLowerCase()===c.name.toLowerCase());if(k)up++;else{k="c"+Date.now()+Math.random().toString(36).slice(2,6);S.people[k]={name:c.name,m:0,d:0,by:null,note:"",custom:true};ad++}const p=S.people[k];if(c.m){p.m=c.m;p.d=c.d;if(c.y)p.by=c.y}if(x)p.xmas=true});save();cur={};render();sheet(`<div class="hd"><h2>Done</h2><button class="x" data-a="close">\u2715</button></div><p class="mute">Added ${ad}, updated ${up}.</p><button class="sec" data-a="close">OK</button>`)}
   else if(a==="tipx"){try{localStorage.setItem("gp-tip","1")}catch(x){}render()}
