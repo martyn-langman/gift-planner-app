@@ -64,79 +64,7 @@ a.sec{display:block;text-align:center;text-decoration:none}
 <div id="sheet" hidden></div>
 <input type="file" id="vcf" accept=".vcf,text/vcard,text/x-vcard,text/directory" multiple hidden>
 <script>
-const SEED=`2026-11-20|Elizabeth Gravelle|11
-2026-11-30|Nick Baxter|43
-2026-12-05|Laura Langman|40
-2026-12-07|Stéphanie Harris|43
-2026-12-12|Max Siller|14
-2026-12-16|Pauline Seaward|62
-2026-12-27|Alice Evans|5
-2027-01-01|Ian Douglas|43
-2027-01-03|Aiden Sledz|12
-2027-01-05|Penny Siller|80
-2027-01-20|Jenny Wallis|41
-2027-01-27|Muriel Curtis|87
-2027-02-06|James Aicken|41
-2027-02-17|Christine Welsh|40
-2027-02-21|Hannah Evans|40
-2027-02-21|Leanne Hunt|1
-2027-02-22|Hannah Speck|42
-2027-02-25|Stanley Langman|10
-2027-03-11|Hannah Jackson|40
-2027-03-15|Gary Evans|43
-2027-03-19|Luke Cliff|32
-2027-03-20|Tom Cooper|24
-2027-03-22|Steve Langman|45
-2027-03-27|Tony Curtis|
-2027-03-28|Grace Knight|10
-2027-04-01|Neil Evans|41
-2027-04-06|Emma Knight|41
-2027-04-12|Tom Gravelle|48
-2027-04-16|Moussa|10
-2027-04-21|Matthew Rowell|43
-2027-04-25|Otis Hunt|6
-2027-04-27|Sarah Marriage|40
-2027-04-28|Chris Spencer|40
-2027-04-28|David Bleach|42
-2027-04-28|Kathryn Dewey|40
-2027-04-30|Robin Jackson|40
-2027-05-07|Cath Cooper|54
-2027-05-07|Paul Boreham|44
-2027-05-12|Peter Siller|52
-2027-05-13|Joshua Langman|15
-2027-05-23|Carrie Gravelle|46
-2027-05-29|Nathaniel Cooper|20
-2027-06-02|Martyn Langman|43
-2027-06-03|Imogen Spencer|9
-2027-06-09|Anna Cooper|49
-2027-06-13|Heidi Langman|6
-2027-06-15|Reuben Spencer|6
-2027-06-17|Rob Speck|50
-2027-06-20|Amelia Langman|11
-2027-07-14|Flukey O’Boyle|40
-2027-07-20|Isabella Jackson|10
-2027-07-24|Richard Cooper|16
-2027-08-04|Jim Siller|83
-2027-08-11|Martin Seaward|66
-2027-08-15|Stephen Curtis|
-2027-08-25|Diego Marquez|48
-2027-09-01|Sandrine Harris|40
-2027-09-14|Ben Harper|45
-2027-09-17|Rob Pegram|16
-2027-09-22|Alex Cooper|22
-2027-09-23|Isla Jackson|6
-2027-10-06|Bethany Seaward|31
-2027-10-13|Beth Knight|44
-2027-10-18|James Evans|9
-2027-10-18|Michelle Langman|47
-2027-10-23|Chrissy Gravelle|15
-2027-10-23|Jonny Cooper|56
-2027-10-25|Nick Langman|73
-2027-10-30|Max Evans|14
-2027-11-04|Matthew Woodburn|42
-2027-11-11|Isaac Cooper|20
-2027-11-16|Sheila Langman|73
-2027-11-19|Lisa Siller|16`.split("\n");
+const SEED=[];
 const KEY="gift-planner-v1";
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -161,6 +89,7 @@ function giftRow(g,who){return `<div class="g ${g.bought?"done":""}"><button cla
 function upHTML(){
   const rows=Object.entries(S.people).filter(([,p])=>p.m).map(([id,p])=>{const o=nextOcc(p);return{id,p,o,n:diff(o)}}).sort((a,b)=>a.n-b.n||a.p.name.localeCompare(b.p.name));
   const soon=rows.filter(r=>r.n<=30&&!isB(r.p)&&!gifts(r.id,"birthday").some(g=>g.bought));
+  if(!Object.keys(S.people).length)return tip()+`<div class="card"><b>Welcome 🎁</b><div class="sub" style="margin:6px 0 10px">Add the people you buy gifts for. Birthdays are optional, so you can also just build a Christmas list.</div><button class="pri" data-a="addp">+ Add your first person</button></div>`;
   const shown=all?rows:rows.filter(r=>r.n<=90);
   const xn=diff(xmas());
   let h=tip()+`<div class="card"><div class="mute">Christmas in</div><div class="big">${xn} days</div><small>${soon.length?soon.length+" birthday"+(soon.length>1?"s":"")+" in the next 30 days without a gift bought":"No gifts outstanding in the next 30 days"}</small></div>`;
