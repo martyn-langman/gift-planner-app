@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gift Planner</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Gifts">
+<meta name="theme-color" content="#b3282d">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#faf6f0;--card:#fff;--ink:#241f1a;--mute:#7a736b;--line:#e8e0d4;--acc:#b3282d;--grn:#2f6b4f;--chip:#f1e9dc;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17130f;--card:#241e18;--ink:#f2ebe0;--mute:#a09686;--line:#3a3128;--acc:#e0575c;--grn:#6fc29a;--chip:#33291f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#17130f;--card:#241e18;--ink:#f2ebe0;--mute:#a09686;--line:#3a3128;--acc:#e0575c;--grn:#6fc29a;--chip:#33291f;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 -apple-system,system-ui,"Segoe UI",Roboto,sans-serif;min-height:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+header{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:9;padding:12px 16px 8px;border-bottom:1px solid var(--line)}
+h1{margin:0 0 8px;font-size:22px}
+.tabs{display:flex;gap:6px}
+.tab{flex:1;border:0;background:var(--chip);color:var(--ink);padding:9px 4px;border-radius:10px;font:inherit;font-size:15px}
+.tab.on{background:var(--acc);color:#fff}
+main{padding:12px 16px 60px;max-width:640px;margin:0 auto}
+.mute,small{color:var(--mute)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.big{font-size:30px;font-weight:700;color:var(--acc)}
+.row{display:flex;gap:12px;align-items:center;width:100%;text-align:left;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:8px;font:inherit}
+.dt{min-width:46px;text-align:center;background:var(--chip);border-radius:10px;padding:5px 0;line-height:1.1}
+.dt b{display:block;font-size:20px}.dt span{font-size:12px;color:var(--mute);text-transform:uppercase}
+.mid{flex:1;min-width:0}.nm{font-weight:600}
+.sub{font-size:13px;color:var(--mute)}.warn{color:var(--acc);font-weight:600}.ok{color:var(--grn);font-weight:600}
+h3{margin:18px 0 8px;font-size:14px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute)}
+input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:8px}
+textarea{min-height:70px}
+button{font:inherit;cursor:pointer}
+.pri{width:100%;background:var(--grn);color:#fff;border:0;border-radius:10px;padding:11px}
+.sec{width:100%;background:var(--chip);color:var(--ink);border:0;border-radius:10px;padding:11px;margin-top:6px}
+.lnk{background:none;border:0;color:var(--acc);padding:10px 0}
+.r2{display:flex;gap:8px}
+#sheet{position:fixed;inset:0;z-index:20}
+#sheet[hidden]{display:none}
+.bk{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+.pn{position:absolute;left:0;right:0;bottom:0;max-height:88%;overflow:auto;background:var(--bg);border-radius:18px 18px 0 0;padding:16px 16px calc(24px + env(safe-area-inset-bottom,0px));max-width:640px;margin:0 auto}
+.hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.hd h2{margin:0;font-size:20px}
+.x{background:none;border:0;color:var(--mute);font-size:18px;padding:4px 8px}
+.g{display:flex;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.g.done .gt>div{text-decoration:line-through;color:var(--mute)}
+.gt{flex:1;min-width:0}
+.ck{width:28px;height:28px;border-radius:50%;border:2px solid var(--grn);background:none;color:#fff;padding:0;line-height:1}
+.g.done .ck{background:var(--grn)}
+label{font-size:13px;color:var(--mute)}
+.sec.on{background:var(--grn);color:#fff}
+a.sec{display:block;text-align:center;text-decoration:none}
+.sm{width:auto!important;margin:0!important;padding:7px 12px!important;font-size:14px}
+</style></head>
+<body>
+<header><h1>🎁 Gift Planner</h1>
+<div class="tabs"><button class="tab" data-a="tab" data-id="up">Upcoming</button><button class="tab" data-a="tab" data-id="xmas">Christmas</button><button class="tab" data-a="tab" data-id="ppl">People</button></div></header>
+<main id="main"></main>
+<div id="sheet" hidden></div>
+<input type="file" id="vcf" accept=".vcf,text/vcard,text/x-vcard,text/directory" multiple hidden>
+<script>
+const SEED=`2026-11-20|Elizabeth Gravelle|11
+2026-11-30|Nick Baxter|43
+2026-12-05|Laura Langman|40
+2026-12-07|Stéphanie Harris|43
+2026-12-12|Max Siller|14
+2026-12-16|Pauline Seaward|62
+2026-12-27|Alice Evans|5
+2027-01-01|Ian Douglas|43
+2027-01-03|Aiden Sledz|12
+2027-01-05|Penny Siller|80
+2027-01-20|Jenny Wallis|41
+2027-01-27|Muriel Curtis|87
+2027-02-06|James Aicken|41
+2027-02-17|Christine Welsh|40
+2027-02-21|Hannah Evans|40
+2027-02-21|Leanne Hunt|1
+2027-02-22|Hannah Speck|42
+2027-02-25|Stanley Langman|10
+2027-03-11|Hannah Jackson|40
+2027-03-15|Gary Evans|43
+2027-03-19|Luke Cliff|32
+2027-03-20|Tom Cooper|24
+2027-03-22|Steve Langman|45
+2027-03-27|Tony Curtis|
+2027-03-28|Grace Knight|10
+2027-04-01|Neil Evans|41
+2027-04-06|Emma Knight|41
+2027-04-12|Tom Gravelle|48
+2027-04-16|Moussa|10
+2027-04-21|Matthew Rowell|43
+2027-04-25|Otis Hunt|6
+2027-04-27|Sarah Marriage|40
+2027-04-28|Chris Spencer|40
+2027-04-28|David Bleach|42
+2027-04-28|Kathryn Dewey|40
+2027-04-30|Robin Jackson|40
+2027-05-07|Cath Cooper|54
+2027-05-07|Paul Boreham|44
+2027-05-12|Peter Siller|52
+2027-05-13|Joshua Langman|15
+2027-05-23|Carrie Gravelle|46
+2027-05-29|Nathaniel Cooper|20
+2027-06-02|Martyn Langman|43
+2027-06-03|Imogen Spencer|9
+2027-06-09|Anna Cooper|49
+2027-06-13|Heidi Langman|6
+2027-06-15|Reuben Spencer|6
+2027-06-17|Rob Speck|50
+2027-06-20|Amelia Langman|11
+2027-07-14|Flukey O’Boyle|40
+2027-07-20|Isabella Jackson|10
+2027-07-24|Richard Cooper|16
+2027-08-04|Jim Siller|83
+2027-08-11|Martin Seaward|66
+2027-08-15|Stephen Curtis|
+2027-08-25|Diego Marquez|48
+2027-09-01|Sandrine Harris|40
+2027-09-14|Ben Harper|45
+2027-09-17|Rob Pegram|16
+2027-09-22|Alex Cooper|22
+2027-09-23|Isla Jackson|6
+2027-10-06|Bethany Seaward|31
+2027-10-13|Beth Knight|44
+2027-10-18|James Evans|9
+2027-10-18|Michelle Langman|47
+2027-10-23|Chrissy Gravelle|15
+2027-10-23|Jonny Cooper|56
+2027-10-25|Nick Langman|73
+2027-10-30|Max Evans|14
+2027-11-04|Matthew Woodburn|42
+2027-11-11|Isaac Cooper|20
+2027-11-16|Sheila Langman|73
+2027-11-19|Lisa Siller|16`.split("\n");
+const KEY="gift-planner-v1";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function seed(){const people={};SEED.forEach((l,i)=>{const [dt,name,n]=l.split("|");people["p"+i]={name,m:+dt.slice(5,7),d:+dt.slice(8,10),by:n?+dt.slice(0,4)-n:null,note:""}});return{people,gifts:[]}}
+let S;try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+if(!S||!S.people)S=seed();
+S.gifts.forEach(g=>{if(g.occ==="christmas"&&S.people[g.pid])S.people[g.pid].xmas=true});
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+let view="up",all=false,cur=null,q="",edit=false;
+const today=()=>{const t=new Date();return new Date(t.getFullYear(),t.getMonth(),t.getDate())};
+function nextOcc(p){if(!p.m)return null;const t=today();let d=new Date(t.getFullYear(),p.m-1,p.d);if(d<t)d=new Date(t.getFullYear()+1,p.m-1,p.d);return d}
+function xmas(){const t=today();let d=new Date(t.getFullYear(),11,25);if(d<t)d=new Date(t.getFullYear()+1,11,25);return d}
+const diff=d=>Math.round((d-today())/864e5);
+const rel=n=>n==0?"Today":n==1?"Tomorrow":"In "+n+" days";
+const fmt=d=>d.toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"});
+const num=s=>parseFloat(String(s||"").replace(/[^0-9.]/g,""))||0
+const money=s=>/^[\d.,]+$/.test(String(s).trim())?"£"+String(s).trim():s;
+function vis(g){const p=S.people[g.pid];if(!p)return false;const y=g.occ==="christmas"?xmas().getFullYear():(nextOcc(p)||today()).getFullYear();return !g.bought||g.yr>=y}
+function gifts(pid,occ){return S.gifts.filter(g=>g.pid===pid&&(!occ||g.occ===occ)&&vis(g))}
+function giftRow(g,who){return `<div class="g ${g.bought?"done":""}"><button class="ck" data-a="bought" data-id="${g.id}" aria-label="Toggle bought">${g.bought?"✓":""}</button><div class="gt"><div>${esc(g.text)}</div><small>${who?esc(S.people[g.pid].name)+" · ":""}${g.occ==="christmas"?"🎄 Christmas":"🎂 Birthday"}${g.price?" · "+esc(money(g.price)):""}${g.bought?" · bought":""}</small></div><button class="x" data-a="del" data-id="${g.id}" aria-label="Delete">✕</button></div>`}
+
+function upHTML(){
+  const rows=Object.entries(S.people).filter(([,p])=>p.m).map(([id,p])=>{const o=nextOcc(p);return{id,p,o,n:diff(o)}}).sort((a,b)=>a.n-b.n||a.p.name.localeCompare(b.p.name));
+  const soon=rows.filter(r=>r.n<=30&&!isB(r.p)&&!gifts(r.id,"birthday").some(g=>g.bought));
+  const shown=all?rows:rows.filter(r=>r.n<=90);
+  const xn=diff(xmas());
+  let h=tip()+`<div class="card"><div class="mute">Christmas in</div><div class="big">${xn} days</div><small>${soon.length?soon.length+" birthday"+(soon.length>1?"s":"")+" in the next 30 days without a gift bought":"No gifts outstanding in the next 30 days"}</small></div>`;
+  h+=shown.map(r=>{const gs=gifts(r.id,"birthday"),b=gs.filter(g=>g.bought).length,i=gs.length-b;
+    const st=isB(r.p)?'<span class="ok">✓ Gifts sorted</span>':b?`<span class="ok">✓ ${b} bought</span>`+(i?` · ${i} idea${i>1?"s":""}`:""):i?`${i} idea${i>1?"s":""}`:`<span class="${r.n<=21?"warn":""}">No ideas yet</span>`;
+    const age=r.p.by?` <small>turns ${r.o.getFullYear()-r.p.by}</small>`:"";
+    return `<button class="row" data-a="${edit?"rm":"person"}" data-id="${r.id}"><div class="dt"><b>${r.o.getDate()}</b><span>${r.o.toLocaleDateString(undefined,{month:"short"})}</span></div><div class="mid"><div class="nm">${esc(r.p.name)}${age}</div><div class="sub">${rel(r.n)} · ${st}</div></div>${edit?'<span class="warn">Remove</span>':""}</button>`}).join("")||`<p class="mute">Nothing in the next 90 days.</p>`;
+  h+=`<button class="sec" data-a="edit">${edit?"Done removing":"Remove people from list"}</button><button class="sec" data-a="more">${all?"Show next 90 days only":"Show all birthdays ("+rows.length+")"}</button>`;
+  return h}
+
+function xHTML(){
+  const gs=S.gifts.filter(g=>g.occ==="christmas"&&vis(g));
+  const plan=gs.reduce((a,g)=>a+num(g.price),0),spent=gs.filter(g=>g.bought).reduce((a,g)=>a+num(g.price),0);
+  let h=`<div class="card"><div class="mute">${diff(xmas())} days to Christmas</div><div class="big">${gs.filter(g=>g.bought).length}/${gs.length} bought</div><small>Spent £${spent.toFixed(2)} of £${plan.toFixed(2)} planned</small></div><button class="pri" data-a="pick">+ Add Christmas idea</button>`;
+  const by={};gs.forEach(g=>(by[g.pid]=by[g.pid]||[]).push(g));
+  Object.keys(by).sort((a,b)=>S.people[a].name.localeCompare(S.people[b].name)).forEach(pid=>{h+=`<h3>${esc(S.people[pid].name)}</h3><div class="card" style="padding:2px 14px">${by[pid].map(g=>giftRow(g)).join("")}</div>`});
+  if(!gs.length)h+=`<p class="mute">No Christmas ideas yet. Add one for each person on your list.</p>`;
+  return h}
+
+function plist(){const t=q.trim().toLowerCase();return Object.entries(S.people).filter(([,p])=>p.name.toLowerCase().includes(t)).sort((a,b)=>a[1].name.localeCompare(b[1].name)).map(([id,p])=>`<button class="row" data-a="${edit?"rm":"person"}" data-id="${id}"><div class="mid"><div class="nm">${esc(p.name)}</div><div class="sub">${p.m?"Birthday "+p.d+" "+new Date(2000,p.m-1,1).toLocaleDateString(undefined,{month:"long"}):"No birthday saved"}</div></div>${edit?'<span class="warn">Remove</span>':""}</button>`).join("")||`<p class="mute">No matches.</p>`}
+function pHTML(){return `<input id="srch" type="search" placeholder="Search people" value="${esc(q)}"><button class="pri" data-a="addp">+ Add person</button><button class="sec" data-a="cts" style="margin-bottom:8px">Add from Contacts</button><button class="sec" data-a="edit">${edit?"Done removing":"Remove people from list"}</button><div style="height:10px"></div><div id="plist">${plist()}</div><button class="lnk" data-a="backup">Backup & restore</button>`}
+
+function render(){document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("on",b.dataset.id===view));$("#main").innerHTML=view==="up"?upHTML():view==="xmas"?xHTML():pHTML()}
+function sheet(h){const s=$("#sheet");s.innerHTML='<div class="bk" data-a="close"></div><div class="pn">'+h+"</div>";s.hidden=false}
+function close(){$("#sheet").hidden=true;cur=null;render()}
+
+function personSheet(){
+  const p=S.people[cur.id],o=nextOcc(p),age=p.by&&o?` · turns ${o.getFullYear()-p.by}`:"";
+  const gs=gifts(cur.id);
+  sheet(`<div class="hd"><div><h2>${esc(p.name)}</h2><div class="mute">${o?fmt(o)+age+" · "+rel(diff(o)).toLowerCase():"No birthday saved"}</div></div><button class="x" data-a="close">✕</button></div>
+  <button class="sec ${p.xmas?"on":""}" data-a="tx" data-id="${cur.id}" style="margin:0 0 8px">${p.xmas?"✓ On my Christmas list":"+ Add to Christmas list"}</button><div class="r2"><button class="sec ${isX(p)?"on":""}" data-a="xdone" data-id="${cur.id}" style="margin:0 0 12px">${isX(p)?"✓ Christmas sorted":"Christmas sorted?"}</button><button ${p.m?"":"hidden"} class="sec ${isB(p)?"on":""}" data-a="bdone" data-id="${cur.id}" style="margin:0 0 12px">${isB(p)?"✓ Birthday sorted":"Birthday sorted?"}</button></div><input id="gt" placeholder="Gift idea…" enterkeyhint="done"><div class="r2"><input id="gp" inputmode="decimal" placeholder="Price in £ (optional)"><select id="go"><option value="birthday">🎂 Birthday</option><option value="christmas">🎄 Christmas</option></select></div>
+  <button class="pri" data-a="addgift">Add idea</button>
+  <div style="margin-top:8px">${gs.map(g=>giftRow(g)).join("")||'<p class="mute">No ideas yet.</p>'}</div>
+  <label for="en">Name</label><input id="en" value="${esc(p.name)}"><label for="bd">Birthday</label><input id="bd" type="date" value="${p.m?(p.by||2000)+"-"+String(p.m).padStart(2,"0")+"-"+String(p.d).padStart(2,"0"):""}"><button class="sec" data-a="setbd" data-id="${cur.id}" style="margin:0 0 12px">Save name & birthday</button>${calLinks(cur.id)}<label for="nt">Notes (sizes, likes, dislikes)</label><textarea id="nt">${esc(p.note||"")}</textarea>
+  <button class="lnk" data-a="rm" data-id="${cur.id}">Remove person from my lists</button>`);
+  $("#go").value=cur.occ||(p.m?"birthday":"christmas");
+}
+function pickSheet(){sheet(`<div class="hd"><h2>Who is it for?</h2><button class="x" data-a="close">✕</button></div><input id="psrch" type="search" placeholder="Search people" autofocus><button class="sec" data-a="addpx" style="margin:0 0 8px">+ Add someone new (birthday optional)</button><div id="pres"></div>`);pres("")}
+function pres(t){t=t.toLowerCase();$("#pres").innerHTML=Object.entries(S.people).filter(([,p])=>p.name.toLowerCase().includes(t)).sort((a,b)=>a[1].name.localeCompare(b[1].name)).slice(0,30).map(([id,p])=>`<button class="row" data-a="xadd" data-id="${id}"><div class="nm">${esc(p.name)}</div></button>`).join("")}
+function addPSheet(x){sheet(`<div class="hd"><h2>Add person</h2><button class="x" data-a="close">✕</button></div><input id="pn" placeholder="Name"><button class="sec" data-a="vcf" style="margin:0 0 8px">Import from Contacts file (.vcf)</button>${navigator.contacts&&navigator.contacts.select?'<button class="sec" data-a="contacts" style="margin:0 0 8px">Pick from contacts</button>':""}<label for="pd">Birthday (optional)</label><input id="pd" type="date"><label style="display:flex;align-items:center;gap:8px;margin:4px 0 12px"><input id="px" type="checkbox" style="width:auto;margin:0" ${x?"checked":""}>Add to Christmas list</label><button class="pri" data-a="savep">Save</button>`)}
+
+const isX=p=>p.xd===xmas().getFullYear();
+const isB=p=>!!p.m&&p.bd===nextOcc(p).getFullYear();
+function xHTML(){
+  const ids=Object.keys(S.people).filter(id=>S.people[id].xmas).sort((a,b)=>S.people[a].name.localeCompare(S.people[b].name));
+  const gs=S.gifts.filter(g=>g.occ==="christmas"&&vis(g)&&S.people[g.pid].xmas);
+  const plan=gs.reduce((a,g)=>a+num(g.price),0),spent=gs.filter(g=>g.bought).reduce((a,g)=>a+num(g.price),0);
+  const done=ids.filter(id=>isX(S.people[id])).length;
+  let h=`<div class="card"><div class="mute">${diff(xmas())} days to Christmas</div><div class="big">${done}/${ids.length} people sorted</div><small>${gs.filter(g=>g.bought).length}/${gs.length} gifts bought · Spent £${spent.toFixed(2)} of £${plan.toFixed(2)} planned</small></div><button class="pri" data-a="pick">+ Add person to Christmas list</button><a class="sec" href="${ics("xmas","Christmas Day",xmas(),[28,7])}" download="christmas.ics">Add Christmas to my calendar</a>`;
+  ids.forEach(id=>{const p=S.people[id],d=isX(p),mine=gs.filter(g=>g.pid===id);
+    h+=`<div class="card" style="margin-top:12px"><div class="hd" style="margin:0;align-items:center"><button class="lnk nm" style="padding:0;color:var(--ink);text-align:left" data-a="person" data-occ="christmas" data-id="${id}">${esc(p.name)}</button><button class="sec sm ${d?"on":""}" data-a="xdone" data-id="${id}">${d?"✓ Sorted":"Mark sorted"}</button></div>${mine.length?mine.map(g=>giftRow(g)).join(""):'<div class="sub" style="margin-top:6px">No ideas yet</div>'}</div>`});
+  if(!ids.length)h+=`<p class="mute">Nobody on your Christmas list yet. Add people now and fill in ideas whenever you’re ready.</p>`;
+  return h}
+const ymd=d=>d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0");
+const nd=d=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+1);
+function ics(uid,title,d,alerts){const e=t=>t.replace(/[,;\\]/g,"\\$&");
+  return "data:text/calendar;charset=utf-8,"+encodeURIComponent(["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Gift Planner//EN","BEGIN:VEVENT","UID:"+uid+"@giftplanner","DTSTAMP:"+ymd(today())+"T000000Z","DTSTART;VALUE=DATE:"+ymd(d),"DTEND;VALUE=DATE:"+ymd(nd(d)),"SUMMARY:"+e(title),"RRULE:FREQ=YEARLY"].concat(...alerts.map(n=>["BEGIN:VALARM","ACTION:DISPLAY","DESCRIPTION:"+e(title),"TRIGGER:-P"+n+"D","END:VALARM"])).concat(["END:VEVENT","END:VCALENDAR"]).join("\r\n"))}
+function gcal(title,d){return "https://calendar.google.com/calendar/render?action=TEMPLATE&text="+encodeURIComponent(title)+"&dates="+ymd(d)+"/"+ymd(nd(d))+"&recur="+encodeURIComponent("RRULE:FREQ=YEARLY")}
+function calLinks(id){const p=S.people[id];if(!p.m)return "";const o=nextOcc(p),t=p.name+"\u2019s birthday";return `<label>Calendar reminder (2 weeks + 1 week before)</label><a class="sec" href="${ics("b-"+id,t,o,[14,7])}" download="birthday.ics">Add birthday to Apple Calendar</a><a class="lnk" style="display:block" href="${esc(gcal(t,o))}" target="_blank" rel="noopener">\u2026or add to Google Calendar</a>`}
+const standalone=()=>navigator.standalone||matchMedia("(display-mode: standalone)").matches;
+function tip(){let d=0;try{d=localStorage.getItem("gp-tip")}catch(e){}return standalone()||d?"":`<div class="card"><b>Install this app</b><div class="sub">In Safari tap Share, then Add to Home Screen, and open it from there. Your data is stored separately for the Home Screen app.</div><button class="lnk" data-a="tipx">Got it</button></div>`}
+function addPerson(n,b,x){let k=Object.keys(S.people).find(k=>S.people[k].name.toLowerCase()===n.toLowerCase());if(!k){k="c"+Date.now();S.people[k]={name:n,m:0,d:0,by:null,note:"",custom:true}}
+  const p=S.people[k],g=String(b||"").replace(/\D/g,"");let y=0,m=0,d=0;
+  if(g.length>=8){y=+g.slice(0,4);m=+g.slice(4,6);d=+g.slice(6,8)}else if(g.length===4){m=+g.slice(0,2);d=+g.slice(2,4)}
+  if(m>=1&&m<=12&&d>=1&&d<=31){p.m=m;p.d=d;if(y>1900&&y<today().getFullYear())p.by=y}
+  if(x)p.xmas=true;save();cur={id:k,kind:"p",occ:p.m?"birthday":"christmas"};render();personSheet();return k}
+function fromText(t){const a=String(t||"").split("|"),n=(a[0]||"").trim();if(a.length<2||!n||n.length>60)return false;addPerson(n,a[1],(a[2]||"").trim()==="xmas");return true}
+function ctsSheet(){sheet(`<div class="hd"><h2>Add from Contacts</h2><button class="x" data-a="close">\u2715</button></div><p class="mute">Run your \u201cAdd Gift Person\u201d Shortcut, choose someone from your contacts, then come back here and tap Paste.</p><button class="pri" data-a="pst">Paste contact</button><div id="pm" class="sub" style="margin:8px 0"></div><details><summary>One-time Shortcut setup (about 2 minutes)</summary><ol class="sub"><li>Open the Shortcuts app and tap + for a new shortcut.</li><li>Add <b>Select Contacts</b>.</li><li>Add <b>Format Date</b>, choose the contact\u2019s Birthday, set Date Format to Custom: <b>yyyy-MM-dd</b>.</li><li>Add <b>Text</b>: the contact\u2019s Name, then a <b>|</b> character, then the Formatted Date.</li><li>Add <b>Copy to Clipboard</b>.</li><li>Name it \u201cAdd Gift Person\u201d and add it to your Home Screen.</li></ol></details>`)}
+let imp=[];
+function parseVcf(t){t=t.replace(/\r?\n[ \t]/g,"");return t.split(/BEGIN:VCARD/i).slice(1).map(c=>{const g=r=>{const m=c.match(r);return m?m[1].trim():""};
+  let n=g(/^FN(?:;[^:\n]*)?:(.*)$/im);if(!n){const q=g(/^N(?:;[^:\n]*)?:(.*)$/im).split(";");n=((q[1]||"")+" "+(q[0]||"")).trim()}
+  const b=g(/^BDAY(?:;[^:\n]*)?:(.*)$/im),dg=b.replace(/\D/g,"");let m=0,d=0,y=null;
+  if(/^--/.test(b)&&dg.length>=4){m=+dg.slice(0,2);d=+dg.slice(2,4)}else if(dg.length>=8){y=+dg.slice(0,4);m=+dg.slice(4,6);d=+dg.slice(6,8);if(y<1900||y===1604)y=null}
+  if(m<1||m>12||d<1||d>31){m=0;d=0}
+  return{name:n,m,d,y}}).filter(x=>x.name)}
+function impSheet(){sheet(`<div class="hd"><h2>Import ${imp.length} contact${imp.length==1?"":"s"}</h2><button class="x" data-a="close">\u2715</button></div><p class="mute">Anyone already in your list with the same name just gets their birthday updated.</p>${imp.map((c,i)=>`<label style="display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);color:var(--ink);font-size:16px"><input type="checkbox" class="ic" data-i="${i}" style="width:auto;margin:0" ${imp.length<=15?"checked":""}><span style="flex:1">${esc(c.name)}<br><small>${c.m?c.d+" "+new Date(2000,c.m-1,1).toLocaleDateString(undefined,{month:"short"}):"no birthday"}</small></span></label>`).join("")}<label style="display:flex;gap:8px;align-items:center;margin:12px 0;color:var(--ink)"><input id="ix" type="checkbox" style="width:auto;margin:0">Add to Christmas list</label><button class="pri" data-a="impgo">Import selected</button>`)}
+$("#vcf").addEventListener("change",async e=>{let out=[];for(const f of [...e.target.files]){try{out=out.concat(parseVcf(await f.text()))}catch(x){}}e.target.value="";cur={};
+  if(!out.length){sheet(`<div class="hd"><h2>Nothing found</h2><button class="x" data-a="close">\u2715</button></div><p class="mute">That file had no contacts in it. In Contacts, open a person, tap Share Contact, and save the .vcf to Files.</p>`);return}
+  imp=out;impSheet()});
+function backupSheet(){sheet(`<div class="hd"><h2>Backup & restore</h2><button class="x" data-a="close">✕</button></div><p class="mute">Copy this text somewhere safe (Notes works well). To move to another copy of the app, paste it into that copy here and tap Restore.</p><textarea id="bkt" style="min-height:140px">${esc(JSON.stringify(S))}</textarea><button class="pri" data-a="restore">Restore from text</button><div id="bkm" class="sub" style="margin-top:8px"></div>`)}
+function confirmSheet(id){const p=S.people[id];sheet(`<div class="hd"><h2>Remove ${esc(p.name)}?</h2><button class="x" data-a="close">✕</button></div><p class="mute">They’ll be taken off all your lists, along with any gift ideas you’ve saved for them.</p><button class="pri" style="background:var(--acc)" data-a="rmgo" data-id="${id}">Remove</button><button class="sec" data-a="close">Cancel</button>`)}
+function refresh(){save();render();if(cur&&cur.id&&!$("#sheet").hidden&&cur.kind==="p")personSheet()}
+document.addEventListener("click",async e=>{
+  const t=e.target.closest("[data-a]");if(!t)return;const a=t.dataset.a,id=t.dataset.id;
+  if(a==="tab"){view=id;render()}
+  else if(a==="more"){all=!all;render()}
+  else if(a==="person"){cur={id,kind:"p",occ:t.dataset.occ};personSheet()}
+  else if(a==="close")close();
+  else if(a==="pick"){cur={};pickSheet()}
+  else if(a==="addp"){cur={};addPSheet()}
+  else if(a==="contacts"){try{const r=await navigator.contacts.select(["name"],{multiple:false});if(r&&r[0]&&r[0].name&&r[0].name[0])$("#pn").value=r[0].name[0]}catch(x){}}
+  else if(a==="savep"){const n=$("#pn").value.trim(),d=$("#pd").value;if(!n){$("#pn").placeholder="Name needed";return}const k="c"+Date.now();S.people[k]={name:n,m:+d.slice(5,7),d:+d.slice(8,10),by:null,note:"",custom:true,xmas:$("#px").checked};save();cur={id:k,kind:"p",occ:d?"birthday":"christmas"};render();personSheet()}
+  else if(a==="edit"){edit=!edit;render()}
+  else if(a==="cts"){cur={};ctsSheet()}
+  else if(a==="pst"){let t="";try{t=await navigator.clipboard.readText()}catch(x){}if(!fromText(t)){const m=$("#pm");if(m)m.textContent="Nothing to add yet. Run your Shortcut first, then tap Paste again."}}
+  else if(a==="vcf")$("#vcf").click();
+  else if(a==="impgo"){const x=$("#ix").checked;let ad=0,up=0;document.querySelectorAll(".ic").forEach(b=>{if(!b.checked)return;const c=imp[+b.dataset.i];let k=Object.keys(S.people).find(k=>S.people[k].name.toLowerCase()===c.name.toLowerCase());if(k)up++;else{k="c"+Date.now()+Math.random().toString(36).slice(2,6);S.people[k]={name:c.name,m:0,d:0,by:null,note:"",custom:true};ad++}const p=S.people[k];if(c.m){p.m=c.m;p.d=c.d;if(c.y)p.by=c.y}if(x)p.xmas=true});save();cur={};render();sheet(`<div class="hd"><h2>Done</h2><button class="x" data-a="close">\u2715</button></div><p class="mute">Added ${ad}, updated ${up}.</p><button class="sec" data-a="close">OK</button>`)}
+  else if(a==="tipx"){try{localStorage.setItem("gp-tip","1")}catch(x){}render()}
+  else if(a==="addpx"){cur={};addPSheet(true)}
+  else if(a==="setbd"){const p=S.people[id],n=$("#en").value.trim(),v=$("#bd").value;if(n)p.name=n;if(v){p.m=+v.slice(5,7);p.d=+v.slice(8,10);const y=+v.slice(0,4);if(y>1900&&y!==2000&&y!==1604)p.by=y}refresh()}
+  else if(a==="backup"){cur={};backupSheet()}
+  else if(a==="restore"){try{const o=JSON.parse($("#bkt").value);if(!o.people||!o.gifts)throw 0;S=o;save();close()}catch(x){$("#bkm").textContent="That doesn’t look like a backup."}}
+  else if(a==="tx"){const p=S.people[id];p.xmas=!p.xmas;refresh()}
+  else if(a==="xdone"){const p=S.people[id];p.xd=isX(p)?null:xmas().getFullYear();refresh()}
+  else if(a==="bdone"){const p=S.people[id];p.bd=isB(p)?null:nextOcc(p).getFullYear();refresh()}
+  else if(a==="xadd"){const p=S.people[id];p.xmas=true;save();cur={id,kind:"p",occ:"christmas"};render();personSheet()}
+  else if(a==="rm"){cur={};confirmSheet(id)}
+  else if(a==="rmgo"){delete S.people[id];S.gifts=S.gifts.filter(g=>g.pid!==id);save();close()}
+  else if(a==="addgift"){const x=$("#gt").value.trim();if(!x)return;const occ=$("#go").value,p=S.people[cur.id];if(occ==="christmas")p.xmas=true;S.gifts.push({id:"g"+Date.now(),pid:cur.id,occ,text:x,price:$("#gp").value.trim(),bought:false,yr:occ==="christmas"?xmas().getFullYear():(nextOcc(p)||today()).getFullYear()});cur.occ=occ;refresh()}
+  else if(a==="bought"){const g=S.gifts.find(g=>g.id===id);g.bought=!g.bought;refresh()}
+  else if(a==="del"){S.gifts=S.gifts.filter(g=>g.id!==id);refresh()}
+});
+document.addEventListener("input",e=>{
+  if(e.target.id==="srch"){q=e.target.value;$("#plist").innerHTML=plist()}
+  else if(e.target.id==="psrch")pres(e.target.value);
+  else if(e.target.id==="nt"&&cur&&cur.id){S.people[cur.id].note=e.target.value;save()}
+});
+try{const u=new URLSearchParams(location.search),n=(u.get("add")||"").trim();if(n){addPerson(n,u.get("bd"),u.get("xmas")==="1");history.replaceState(null,"",location.pathname)}}catch(e){}
+render();
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+</script></body></html>
