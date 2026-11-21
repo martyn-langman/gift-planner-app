@@ -62,6 +62,7 @@ a.sec{display:block;text-align:center;text-decoration:none}
 <div class="tabs"><button class="tab" data-a="tab" data-id="up">Upcoming</button><button class="tab" data-a="tab" data-id="xmas">Christmas</button><button class="tab" data-a="tab" data-id="ppl">People</button></div></header>
 <main id="main"></main>
 <div id="sheet" hidden></div>
+<input type="file" id="vcf" accept=".vcf,text/vcard,text/x-vcard,text/directory" multiple hidden>
 <script>
 const SEED=`2026-11-20|Elizabeth Gravelle|11
 2026-11-30|Nick Baxter|43
@@ -180,7 +181,7 @@ function xHTML(){
   return h}
 
 function plist(){const t=q.trim().toLowerCase();return Object.entries(S.people).filter(([,p])=>p.name.toLowerCase().includes(t)).sort((a,b)=>a[1].name.localeCompare(b[1].name)).map(([id,p])=>`<button class="row" data-a="${edit?"rm":"person"}" data-id="${id}"><div class="mid"><div class="nm">${esc(p.name)}</div><div class="sub">${p.m?"Birthday "+p.d+" "+new Date(2000,p.m-1,1).toLocaleDateString(undefined,{month:"long"}):"No birthday saved"}</div></div>${edit?'<span class="warn">Remove</span>':""}</button>`).join("")||`<p class="mute">No matches.</p>`}
-function pHTML(){return `<input id="srch" type="search" placeholder="Search people" value="${esc(q)}"><button class="pri" data-a="addp">+ Add person</button><button class="sec" data-a="edit">${edit?"Done removing":"Remove people from list"}</button><div style="height:10px"></div><div id="plist">${plist()}</div><button class="lnk" data-a="backup">Backup & restore</button>`}
+function pHTML(){return `<input id="srch" type="search" placeholder="Search people" value="${esc(q)}"><button class="pri" data-a="addp">+ Add person</button><button class="sec" data-a="cts" style="margin-bottom:8px">Add from Contacts</button><button class="sec" data-a="edit">${edit?"Done removing":"Remove people from list"}</button><div style="height:10px"></div><div id="plist">${plist()}</div><button class="lnk" data-a="backup">Backup & restore</button>`}
 
 function render(){document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("on",b.dataset.id===view));$("#main").innerHTML=view==="up"?upHTML():view==="xmas"?xHTML():pHTML()}
 function sheet(h){const s=$("#sheet");s.innerHTML='<div class="bk" data-a="close"></div><div class="pn">'+h+"</div>";s.hidden=false}
@@ -193,13 +194,13 @@ function personSheet(){
   <button class="sec ${p.xmas?"on":""}" data-a="tx" data-id="${cur.id}" style="margin:0 0 8px">${p.xmas?"✓ On my Christmas list":"+ Add to Christmas list"}</button><div class="r2"><button class="sec ${isX(p)?"on":""}" data-a="xdone" data-id="${cur.id}" style="margin:0 0 12px">${isX(p)?"✓ Christmas sorted":"Christmas sorted?"}</button><button ${p.m?"":"hidden"} class="sec ${isB(p)?"on":""}" data-a="bdone" data-id="${cur.id}" style="margin:0 0 12px">${isB(p)?"✓ Birthday sorted":"Birthday sorted?"}</button></div><input id="gt" placeholder="Gift idea…" enterkeyhint="done"><div class="r2"><input id="gp" inputmode="decimal" placeholder="Price in £ (optional)"><select id="go"><option value="birthday">🎂 Birthday</option><option value="christmas">🎄 Christmas</option></select></div>
   <button class="pri" data-a="addgift">Add idea</button>
   <div style="margin-top:8px">${gs.map(g=>giftRow(g)).join("")||'<p class="mute">No ideas yet.</p>'}</div>
-  ${p.m?"":`<label for="bd">Birthday (optional)</label><input id="bd" type="date"><button class="sec" data-a="setbd" data-id="${cur.id}" style="margin:0 0 12px">Save birthday</button>`}${calLinks(cur.id)}<label for="nt">Notes (sizes, likes, dislikes)</label><textarea id="nt">${esc(p.note||"")}</textarea>
+  <label for="en">Name</label><input id="en" value="${esc(p.name)}"><label for="bd">Birthday</label><input id="bd" type="date" value="${p.m?(p.by||2000)+"-"+String(p.m).padStart(2,"0")+"-"+String(p.d).padStart(2,"0"):""}"><button class="sec" data-a="setbd" data-id="${cur.id}" style="margin:0 0 12px">Save name & birthday</button>${calLinks(cur.id)}<label for="nt">Notes (sizes, likes, dislikes)</label><textarea id="nt">${esc(p.note||"")}</textarea>
   <button class="lnk" data-a="rm" data-id="${cur.id}">Remove person from my lists</button>`);
   $("#go").value=cur.occ||(p.m?"birthday":"christmas");
 }
 function pickSheet(){sheet(`<div class="hd"><h2>Who is it for?</h2><button class="x" data-a="close">✕</button></div><input id="psrch" type="search" placeholder="Search people" autofocus><button class="sec" data-a="addpx" style="margin:0 0 8px">+ Add someone new (birthday optional)</button><div id="pres"></div>`);pres("")}
 function pres(t){t=t.toLowerCase();$("#pres").innerHTML=Object.entries(S.people).filter(([,p])=>p.name.toLowerCase().includes(t)).sort((a,b)=>a[1].name.localeCompare(b[1].name)).slice(0,30).map(([id,p])=>`<button class="row" data-a="xadd" data-id="${id}"><div class="nm">${esc(p.name)}</div></button>`).join("")}
-function addPSheet(x){sheet(`<div class="hd"><h2>Add person</h2><button class="x" data-a="close">✕</button></div><input id="pn" placeholder="Name">${navigator.contacts&&navigator.contacts.select?'<button class="sec" data-a="contacts" style="margin:0 0 8px">Pick from contacts</button>':""}<label for="pd">Birthday (optional)</label><input id="pd" type="date"><label style="display:flex;align-items:center;gap:8px;margin:4px 0 12px"><input id="px" type="checkbox" style="width:auto;margin:0" ${x?"checked":""}>Add to Christmas list</label><button class="pri" data-a="savep">Save</button>`)}
+function addPSheet(x){sheet(`<div class="hd"><h2>Add person</h2><button class="x" data-a="close">✕</button></div><input id="pn" placeholder="Name"><button class="sec" data-a="vcf" style="margin:0 0 8px">Import from Contacts file (.vcf)</button>${navigator.contacts&&navigator.contacts.select?'<button class="sec" data-a="contacts" style="margin:0 0 8px">Pick from contacts</button>':""}<label for="pd">Birthday (optional)</label><input id="pd" type="date"><label style="display:flex;align-items:center;gap:8px;margin:4px 0 12px"><input id="px" type="checkbox" style="width:auto;margin:0" ${x?"checked":""}>Add to Christmas list</label><button class="pri" data-a="savep">Save</button>`)}
 
 const isX=p=>p.xd===xmas().getFullYear();
 const isB=p=>!!p.m&&p.bd===nextOcc(p).getFullYear();
@@ -221,6 +222,24 @@ function gcal(title,d){return "https://calendar.google.com/calendar/render?actio
 function calLinks(id){const p=S.people[id];if(!p.m)return "";const o=nextOcc(p),t=p.name+"\u2019s birthday";return `<label>Calendar reminder (2 weeks + 1 week before)</label><a class="sec" href="${ics("b-"+id,t,o,[14,7])}" download="birthday.ics">Add birthday to Apple Calendar</a><a class="lnk" style="display:block" href="${esc(gcal(t,o))}" target="_blank" rel="noopener">\u2026or add to Google Calendar</a>`}
 const standalone=()=>navigator.standalone||matchMedia("(display-mode: standalone)").matches;
 function tip(){let d=0;try{d=localStorage.getItem("gp-tip")}catch(e){}return standalone()||d?"":`<div class="card"><b>Install this app</b><div class="sub">In Safari tap Share, then Add to Home Screen, and open it from there. Your data is stored separately for the Home Screen app.</div><button class="lnk" data-a="tipx">Got it</button></div>`}
+function addPerson(n,b,x){let k=Object.keys(S.people).find(k=>S.people[k].name.toLowerCase()===n.toLowerCase());if(!k){k="c"+Date.now();S.people[k]={name:n,m:0,d:0,by:null,note:"",custom:true}}
+  const p=S.people[k],g=String(b||"").replace(/\D/g,"");let y=0,m=0,d=0;
+  if(g.length>=8){y=+g.slice(0,4);m=+g.slice(4,6);d=+g.slice(6,8)}else if(g.length===4){m=+g.slice(0,2);d=+g.slice(2,4)}
+  if(m>=1&&m<=12&&d>=1&&d<=31){p.m=m;p.d=d;if(y>1900&&y<today().getFullYear())p.by=y}
+  if(x)p.xmas=true;save();cur={id:k,kind:"p",occ:p.m?"birthday":"christmas"};render();personSheet();return k}
+function fromText(t){const a=String(t||"").split("|"),n=(a[0]||"").trim();if(a.length<2||!n||n.length>60)return false;addPerson(n,a[1],(a[2]||"").trim()==="xmas");return true}
+function ctsSheet(){sheet(`<div class="hd"><h2>Add from Contacts</h2><button class="x" data-a="close">\u2715</button></div><p class="mute">Run your \u201cAdd Gift Person\u201d Shortcut, choose someone from your contacts, then come back here and tap Paste.</p><button class="pri" data-a="pst">Paste contact</button><div id="pm" class="sub" style="margin:8px 0"></div><details><summary>One-time Shortcut setup (about 2 minutes)</summary><ol class="sub"><li>Open the Shortcuts app and tap + for a new shortcut.</li><li>Add <b>Select Contacts</b>.</li><li>Add <b>Format Date</b>, choose the contact\u2019s Birthday, set Date Format to Custom: <b>yyyy-MM-dd</b>.</li><li>Add <b>Text</b>: the contact\u2019s Name, then a <b>|</b> character, then the Formatted Date.</li><li>Add <b>Copy to Clipboard</b>.</li><li>Name it \u201cAdd Gift Person\u201d and add it to your Home Screen.</li></ol></details>`)}
+let imp=[];
+function parseVcf(t){t=t.replace(/\r?\n[ \t]/g,"");return t.split(/BEGIN:VCARD/i).slice(1).map(c=>{const g=r=>{const m=c.match(r);return m?m[1].trim():""};
+  let n=g(/^FN(?:;[^:\n]*)?:(.*)$/im);if(!n){const q=g(/^N(?:;[^:\n]*)?:(.*)$/im).split(";");n=((q[1]||"")+" "+(q[0]||"")).trim()}
+  const b=g(/^BDAY(?:;[^:\n]*)?:(.*)$/im),dg=b.replace(/\D/g,"");let m=0,d=0,y=null;
+  if(/^--/.test(b)&&dg.length>=4){m=+dg.slice(0,2);d=+dg.slice(2,4)}else if(dg.length>=8){y=+dg.slice(0,4);m=+dg.slice(4,6);d=+dg.slice(6,8);if(y<1900||y===1604)y=null}
+  if(m<1||m>12||d<1||d>31){m=0;d=0}
+  return{name:n,m,d,y}}).filter(x=>x.name)}
+function impSheet(){sheet(`<div class="hd"><h2>Import ${imp.length} contact${imp.length==1?"":"s"}</h2><button class="x" data-a="close">\u2715</button></div><p class="mute">Anyone already in your list with the same name just gets their birthday updated.</p>${imp.map((c,i)=>`<label style="display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);color:var(--ink);font-size:16px"><input type="checkbox" class="ic" data-i="${i}" style="width:auto;margin:0" ${imp.length<=15?"checked":""}><span style="flex:1">${esc(c.name)}<br><small>${c.m?c.d+" "+new Date(2000,c.m-1,1).toLocaleDateString(undefined,{month:"short"}):"no birthday"}</small></span></label>`).join("")}<label style="display:flex;gap:8px;align-items:center;margin:12px 0;color:var(--ink)"><input id="ix" type="checkbox" style="width:auto;margin:0">Add to Christmas list</label><button class="pri" data-a="impgo">Import selected</button>`)}
+$("#vcf").addEventListener("change",async e=>{let out=[];for(const f of [...e.target.files]){try{out=out.concat(parseVcf(await f.text()))}catch(x){}}e.target.value="";cur={};
+  if(!out.length){sheet(`<div class="hd"><h2>Nothing found</h2><button class="x" data-a="close">\u2715</button></div><p class="mute">That file had no contacts in it. In Contacts, open a person, tap Share Contact, and save the .vcf to Files.</p>`);return}
+  imp=out;impSheet()});
 function backupSheet(){sheet(`<div class="hd"><h2>Backup & restore</h2><button class="x" data-a="close">✕</button></div><p class="mute">Copy this text somewhere safe (Notes works well). To move to another copy of the app, paste it into that copy here and tap Restore.</p><textarea id="bkt" style="min-height:140px">${esc(JSON.stringify(S))}</textarea><button class="pri" data-a="restore">Restore from text</button><div id="bkm" class="sub" style="margin-top:8px"></div>`)}
 function confirmSheet(id){const p=S.people[id];sheet(`<div class="hd"><h2>Remove ${esc(p.name)}?</h2><button class="x" data-a="close">✕</button></div><p class="mute">They’ll be taken off all your lists, along with any gift ideas you’ve saved for them.</p><button class="pri" style="background:var(--acc)" data-a="rmgo" data-id="${id}">Remove</button><button class="sec" data-a="close">Cancel</button>`)}
 function refresh(){save();render();if(cur&&cur.id&&!$("#sheet").hidden&&cur.kind==="p")personSheet()}
@@ -235,9 +254,13 @@ document.addEventListener("click",async e=>{
   else if(a==="contacts"){try{const r=await navigator.contacts.select(["name"],{multiple:false});if(r&&r[0]&&r[0].name&&r[0].name[0])$("#pn").value=r[0].name[0]}catch(x){}}
   else if(a==="savep"){const n=$("#pn").value.trim(),d=$("#pd").value;if(!n){$("#pn").placeholder="Name needed";return}const k="c"+Date.now();S.people[k]={name:n,m:+d.slice(5,7),d:+d.slice(8,10),by:null,note:"",custom:true,xmas:$("#px").checked};save();cur={id:k,kind:"p",occ:d?"birthday":"christmas"};render();personSheet()}
   else if(a==="edit"){edit=!edit;render()}
+  else if(a==="cts"){cur={};ctsSheet()}
+  else if(a==="pst"){let t="";try{t=await navigator.clipboard.readText()}catch(x){}if(!fromText(t)){const m=$("#pm");if(m)m.textContent="Nothing to add yet. Run your Shortcut first, then tap Paste again."}}
+  else if(a==="vcf")$("#vcf").click();
+  else if(a==="impgo"){const x=$("#ix").checked;let ad=0,up=0;document.querySelectorAll(".ic").forEach(b=>{if(!b.checked)return;const c=imp[+b.dataset.i];let k=Object.keys(S.people).find(k=>S.people[k].name.toLowerCase()===c.name.toLowerCase());if(k)up++;else{k="c"+Date.now()+Math.random().toString(36).slice(2,6);S.people[k]={name:c.name,m:0,d:0,by:null,note:"",custom:true};ad++}const p=S.people[k];if(c.m){p.m=c.m;p.d=c.d;if(c.y)p.by=c.y}if(x)p.xmas=true});save();cur={};render();sheet(`<div class="hd"><h2>Done</h2><button class="x" data-a="close">\u2715</button></div><p class="mute">Added ${ad}, updated ${up}.</p><button class="sec" data-a="close">OK</button>`)}
   else if(a==="tipx"){try{localStorage.setItem("gp-tip","1")}catch(x){}render()}
   else if(a==="addpx"){cur={};addPSheet(true)}
-  else if(a==="setbd"){const v=$("#bd").value;if(!v)return;const p=S.people[id];p.m=+v.slice(5,7);p.d=+v.slice(8,10);refresh()}
+  else if(a==="setbd"){const p=S.people[id],n=$("#en").value.trim(),v=$("#bd").value;if(n)p.name=n;if(v){p.m=+v.slice(5,7);p.d=+v.slice(8,10);const y=+v.slice(0,4);if(y>1900&&y!==2000&&y!==1604)p.by=y}refresh()}
   else if(a==="backup"){cur={};backupSheet()}
   else if(a==="restore"){try{const o=JSON.parse($("#bkt").value);if(!o.people||!o.gifts)throw 0;S=o;save();close()}catch(x){$("#bkm").textContent="That doesn’t look like a backup."}}
   else if(a==="tx"){const p=S.people[id];p.xmas=!p.xmas;refresh()}
@@ -255,6 +278,7 @@ document.addEventListener("input",e=>{
   else if(e.target.id==="psrch")pres(e.target.value);
   else if(e.target.id==="nt"&&cur&&cur.id){S.people[cur.id].note=e.target.value;save()}
 });
+try{const u=new URLSearchParams(location.search),n=(u.get("add")||"").trim();if(n){addPerson(n,u.get("bd"),u.get("xmas")==="1");history.replaceState(null,"",location.pathname)}}catch(e){}
 render();
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 if("serviceWorker" in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
