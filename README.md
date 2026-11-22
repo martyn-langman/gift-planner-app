@@ -6,6 +6,7 @@ A simple, private web app for planning birthday and Christmas gifts. Works on iP
 - Upcoming birthdays with countdowns and gift-status reminders
 - Gift ideas per person, with prices in £, and a bought tick
 - Christmas list with budget totals, per-person subtotals and a "sorted" mark
+- Overall Christmas budget plus per-person Christmas and birthday budgets
 - Edit any idea later (update the real price), and hide a person's gifts when showing someone the app
 - Add birthday or Christmas reminders to Apple or Google Calendar
 - Add people manually, from a .vcf contacts file, or via an iOS Shortcut
